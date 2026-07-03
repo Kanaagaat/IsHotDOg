@@ -10,26 +10,29 @@ hotdog
 not hotdog`;
 
 const FAKE_COMPANIES = [
-  { mono: "F&", name: "FRANK & CO.", desc: "Enterprise frankfurter logistics" },
-  { mono: "WD", name: "WIENER DYNAMICS", desc: "Industrial sausage robotics" },
-  { mono: "BS", name: "BUNSTACK", desc: "Cloud-native bun infrastructure" },
-  { mono: "CC", name: "CONDIMENT CAPITAL", desc: "Series B mustard fund" },
-  { mono: "EM", name: "ENCASED MEATS INC.", desc: "Vertically integrated casings" },
-  { mono: "RV", name: "RELISH VENTURES", desc: "Seed-stage relish accelerator" },
+  "FRANK & CO.",
+  "WIENER DYNAMICS",
+  "BUNSTACK",
+  "CONDIMENT CAPITAL",
+  "ENCASED MEATS INC.",
+  "RELISH VENTURES",
 ];
 
-const FEATURES = [
+const TESTIMONIALS = [
   {
-    title: "99.7% Accuracy",
-    desc: "Benchmarked against our proprietary, internally-curated hotdog corpus. Independently unverified.",
+    quote:
+      "We were losing upwards of 40 engineering hours a week to manual hotdog identification. Not Hotdog gave us that time back.",
+    author: "Head of Frankfurter Operations, BunStack",
   },
   {
-    title: "Sub-200ms Detection",
-    desc: "Engineered from the ground up to answer one question as fast as physically possible.",
+    quote:
+      "I've personally deployed this across twelve regional offices. Not a single corn dog has been misclassified since rollout.",
+    author: "VP, Sausage Infrastructure, Encased Meats Inc.",
   },
   {
-    title: "Enterprise-Ready API",
-    desc: "SOC 2-track, SSO-pending, on-prem-curious. Ask our sales team about our roadmap.",
+    quote:
+      "Our Series A term sheet explicitly cited this demo as a driver of the investment.",
+    author: "General Partner, Relish Ventures",
   },
 ];
 
@@ -39,30 +42,34 @@ const PRESS_HEADLINES = [
   "Sausage Weekly: “Is This The Most Important AI Company of 2009?”",
 ];
 
-const FEED = [
+const PRICING_PLANS = [
   {
-    mono: "HF",
-    title: "“Definitely a hotdog” — confirmed via BunStack",
-    quote:
-      "We were losing upwards of 40 engineering hours a week to manual hotdog identification. Not Hotdog gave us that time back — and, frankly, our sense of purpose.",
-    author: "Head of Frankfurter Operations, BunStack",
-    meta: "Posted 2 hours ago · Verified detection",
+    plan: "STARTER",
+    price: 100,
+    features: [
+      "Up to 500 detections / mo",
+      "Standard accuracy model",
+      "Email support",
+    ],
   },
   {
-    mono: "VS",
-    title: "“Not a single corn dog since rollout” — Encased Meats Inc.",
-    quote:
-      "I've personally deployed this across twelve regional offices. Not a single corn dog has been misclassified since rollout.",
-    author: "VP, Sausage Infrastructure, Encased Meats Inc.",
-    meta: "Posted 5 hours ago · Verified detection",
+    plan: "PROFESSIONAL",
+    price: 200,
+    popular: true,
+    features: [
+      "Up to 5,000 detections / mo",
+      "99.7% accuracy SLA",
+      "Priority support",
+    ],
   },
   {
-    mono: "GP",
-    title: "“Cited in our term sheet” — Relish Ventures",
-    quote:
-      "Our Series A term sheet explicitly cited this demo. I am not exaggerating when I say this product changed the trajectory of the fund.",
-    author: "General Partner, Relish Ventures",
-    meta: "Posted 1 day ago · Verified detection",
+    plan: "ENTERPRISE",
+    price: 250,
+    features: [
+      "Unlimited detections",
+      "Dedicated account manager",
+      "On-prem deployment option",
+    ],
   },
 ];
 
@@ -72,7 +79,6 @@ const FOOTER_LINKS = [
   "Hotdog Data Processing Addendum",
   "Cookie Policy",
   "Responsible Disclosure",
-  "Series A Press Release",
 ];
 
 function fileToResizedBase64(file, maxDim = 1024) {
@@ -149,16 +155,6 @@ async function detectHotdog(file) {
   throw new Error("ambiguous_response");
 }
 
-function alertComingSoon(e) {
-  e.preventDefault();
-  window.alert("Coming soon in v2.0!");
-}
-
-function alertInvestorsOnly(e) {
-  e.preventDefault();
-  window.alert("Investor access is by invitation only.");
-}
-
 function DigitCounter({ value }) {
   const digits = String(value).padStart(7, "0").split("");
   return (
@@ -170,26 +166,27 @@ function DigitCounter({ value }) {
   );
 }
 
-function SpinnerRing() {
-  const count = 8;
+function PriceCard({ plan, price, features, popular }) {
   return (
-    <div className="nh-spinner-ring">
-      {Array.from({ length: count }).map((_, i) => {
-        const angle = (i / count) * 2 * Math.PI - Math.PI / 2;
-        const x = 50 + 40 * Math.cos(angle);
-        const y = 50 + 40 * Math.sin(angle);
-        return (
-          <i
-            key={i}
-            style={{
-              left: `${x}%`,
-              top: `${y}%`,
-              transform: "translate(-50%, -50%)",
-              animationDelay: `${(i / count) * 1.1}s`,
-            }}
-          />
-        );
-      })}
+    <div className={`nh-price-card ${popular ? "popular" : ""}`}>
+      {popular && <div className="nh-price-ribbon">★ MOST POPULAR ★</div>}
+      <div className="nh-price-head">
+        <div className="nh-price-plan">{plan}</div>
+      </div>
+      <div className="nh-price-amount">
+        ${price}
+        <small>/mo after trial</small>
+      </div>
+      <ul className="nh-price-features">
+        {features.map((f) => (
+          <li key={f}>&#10003; {f}</li>
+        ))}
+      </ul>
+      <div className="nh-price-cta">
+        <a href="#detector" className="nh-btn nh-btn-primary">
+          Start Free Trial &raquo;
+        </a>
+      </div>
     </div>
   );
 }
@@ -201,7 +198,9 @@ function VerdictDialog({ result, onClose, onReset }) {
     <div className="nh-modal-backdrop" role="alertdialog">
       <div className="nh-dialog">
         <div className={`nh-dialog-title ${cls}`}>
-          <span>{isHotdog ? "ANALYSIS COMPLETE — SUCCESS" : "ANALYSIS COMPLETE — ALERT"}</span>
+          <span>
+            {isHotdog ? "ANALYSIS COMPLETE — SUCCESS" : "ANALYSIS COMPLETE — ALERT"}
+          </span>
           <span className="x" onClick={onClose} title="Close">
             ✕
           </span>
@@ -215,7 +214,10 @@ function VerdictDialog({ result, onClose, onReset }) {
             Confidence: {isHotdog ? "99.7%" : "99.4%"} &middot; Verdict is final
           </div>
           <hr className="nh-dialog-rule" />
-          <button className="nh-btn nh-btn-green" onClick={onReset}>
+          <button
+            className={`nh-btn ${isHotdog ? "nh-btn-green" : "nh-btn-maroon"}`}
+            onClick={onReset}
+          >
             Analyze Another &raquo;
           </button>
         </div>
@@ -241,6 +243,7 @@ export default function App() {
   const [result, setResult] = useState(null); // 'hotdog' | 'not hotdog' | null
   const [errorMessage, setErrorMessage] = useState("");
   const [dialogDismissed, setDialogDismissed] = useState(false);
+  const [showCoachmark, setShowCoachmark] = useState(true);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -287,44 +290,32 @@ export default function App() {
     setDialogDismissed(false);
   };
 
-  let rowTitle = "Awaiting Photo Upload";
-  let rowTitleClass = "";
-  let rowDesc =
-    "Upload a photo or use your camera to begin live hotdog analysis.";
+  let title = "Awaiting Photo Upload";
+  let titleClass = "";
+  let desc = "Upload a photo or use your camera to begin live hotdog analysis.";
 
   if (status === "error") {
-    rowTitle = "Analysis Failed";
-    rowDesc = errorMessage;
+    title = "Analysis Failed";
+    titleClass = "error";
+    desc = errorMessage;
   } else if (status === "loading") {
-    rowTitle = "Evaluating...";
-    rowDesc =
-      "Our neural architecture is evaluating pixel-level frankfurter probability.";
+    title = "Evaluating...";
+    desc = "Our neural architecture is evaluating pixel-level frankfurter probability.";
   } else if (result === "hotdog") {
-    rowTitle = "HOTDOG CONFIRMED";
-    rowTitleClass = "hot";
-    rowDesc =
-      "Confidence: 99.7%. Classified as a hotdog by the NotHotdog Detection Engine v4.2.";
+    title = "HOTDOG CONFIRMED";
+    titleClass = "hot";
+    desc = "Confidence: 99.7%. Classified as a hotdog by the NotHotdog Detection Engine v4.2.";
   } else if (result === "not hotdog") {
-    rowTitle = "NOT A HOTDOG";
-    rowTitleClass = "not";
-    rowDesc = "Confidence: 99.4%. This image does not contain a hotdog.";
+    title = "NOT A HOTDOG";
+    titleClass = "not";
+    desc = "Confidence: 99.4%. This image does not contain a hotdog.";
   } else if (file) {
-    rowTitle = "Ready to Analyze";
-    rowDesc = "Photo loaded. Click Analyze to run the detection model.";
+    title = "Ready to Analyze";
+    desc = "Photo loaded. Click Analyze to run the detection model.";
   }
 
   return (
     <div className="nh-page">
-      <div className="nh-utilitybar">
-        <a href="#home">Home</a>
-        <a href="#" onClick={alertComingSoon}>
-          My Account
-        </a>
-        <a href="#" onClick={alertComingSoon}>
-          Help
-        </a>
-      </div>
-
       <div className="nh-banner" id="home">
         <div className="nh-logo">
           Not<span>Hotdog</span>.com
@@ -337,50 +328,27 @@ export default function App() {
         <div className="nh-counter-wrap">
           Hotdogs detected today: <DigitCounter value={count} />
         </div>
-
-        <div className="nh-loginbox">
-          <table>
-            <tbody>
-              <tr>
-                <td>Username:</td>
-                <td>
-                  <input type="text" disabled />
-                </td>
-              </tr>
-              <tr>
-                <td>Password:</td>
-                <td>
-                  <input type="password" disabled />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="nh-loginlinks">
-            <a href="#" onClick={alertInvestorsOnly}>
-              LOG IN
-            </a>{" "}
-            |{" "}
-            <a href="#" onClick={(e) => e.preventDefault()}>
-              REGISTER
-            </a>{" "}
-            |{" "}
-            <a href="#" onClick={(e) => e.preventDefault()}>
-              FORGOT
-            </a>
-          </div>
-        </div>
       </div>
+
+      {showCoachmark && (
+        <div className="nh-coachmark">
+          <span>
+            &#128075; Yes, we know. Jian Yang did it first. We just have
+            better UI.
+          </span>
+          <button
+            className="nh-coachmark-close"
+            onClick={() => setShowCoachmark(false)}
+          >
+            Got it &#10005;
+          </button>
+        </div>
+      )}
 
       <div className="nh-ticker">
         <marquee behavior="scroll" direction="left" scrollamount="4">
-          &#127881; We just closed a $50M Series A to double down on hotdog
-          recognition &mdash;{" "}
-          <a href="#" onClick={(e) => e.preventDefault()}>
-            Read the Press Release
-          </a>{" "}
-          &nbsp;&nbsp;&nbsp;&nbsp; &#127881; Now hiring: Senior Frankfurter
-          Scientist &nbsp;&nbsp;&nbsp;&nbsp; &#127881; As seen in TechCrunch,
-          The Information, and Sausage Weekly
+          &#127881; Start your 7-day free trial today &mdash; no credit card
+          required &mdash; See Pricing below
         </marquee>
       </div>
 
@@ -392,251 +360,155 @@ export default function App() {
           <a href="#detector">Detector</a>
         </li>
         <li>
-          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
         </li>
         <li>
           <a href="#trusted-by">Trusted By</a>
         </li>
         <li>
-          <a href="#testimonials">Testimonials</a>
-        </li>
-        <li>
-          <a href="#pricing">Pricing</a>
-        </li>
-        <li>
-          <a href="#press">Press</a>
+          <a href="#news">News</a>
         </li>
       </ul>
 
-      <div className="nh-quickbar">
-        <span className="nh-quickbar-label">QUICK ANALYZE:</span>
-        <span className="nh-fakeinput">
-          {file ? file.name : "No file selected..."}
-        </span>
-        <a href="#detector" className="nh-btn">
-          Go to Detector &raquo;
-        </a>
-      </div>
-
-      <div className="nh-columns">
-        <div className="nh-sidebar-left">
-          <button
-            className="nh-btn nh-btn-dark"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            &#9650; Upload User Photos
-          </button>
-
-          <div style={{ height: 10 }} />
-
-          <div className="nh-panel">
-            <div className="nh-panel-head">SECTIONS</div>
-            <ul className="nh-linklist">
-              <li>
-                <a href="#home">Overview</a>
-              </li>
-              <li>
-                <a href="#detector">Live Detector</a>
-              </li>
-              <li>
-                <a href="#features">Features</a>
-              </li>
-              <li>
-                <a href="#trusted-by">Trusted By</a>
-              </li>
-              <li>
-                <a href="#testimonials">Testimonials</a>
-              </li>
-              <li>
-                <a href="#pricing">Pricing</a>
-              </li>
-              <li>
-                <a href="#press">Press</a>
-              </li>
-            </ul>
-          </div>
-
-          <div className="nh-panel" id="trusted-by">
-            <div className="nh-panel-head">TRUSTED BY</div>
-            <div>
-              {FAKE_COMPANIES.map((c) => (
-                <div className="nh-channelbox" key={c.name}>
-                  <div className="nh-channel-logo">{c.mono}</div>
-                  <div>
-                    <div className="nh-channel-name">{c.name}</div>
-                    <div className="nh-channel-desc">{c.desc}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="nh-panel" id="pricing">
-            <div className="nh-panel-head">PRICING</div>
-            <div className="nh-panel-body">
-              Enterprise pricing available upon request.
-              <br />
-              <br />
-              <button
-                className="nh-btn"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.alert(
-                    "Our sales team will reach out within 3-5 business quarters."
-                  );
-                }}
-              >
-                Contact Sales
-              </button>
+      <div className="nh-main">
+        <div className="nh-panel">
+          <div className="nh-panel-head">WELCOME TO NOTHOTDOG.COM</div>
+          <div className="nh-panel-body">
+            Not Hotdog is the only computer vision platform purpose-built to
+            answer a single question &mdash; with zero scope creep, zero
+            feature bloat, and maximum focus.
+            <div className="nh-statstrip">
+              <span className="nh-statchip">★ 99.7% Accuracy</span>
+              <span className="nh-statchip">★ Sub-200ms Detection</span>
+              <span className="nh-statchip">★ Enterprise-Ready API</span>
             </div>
           </div>
         </div>
 
-        <div className="nh-main">
-          <div style={{ fontSize: 10, color: "#8896a6", marginBottom: 6 }}>
-            Home &raquo; Live Detector
-          </div>
-
-          <div className="nh-panel">
-            <div className="nh-panel-head">WELCOME TO NOTHOTDOG.COM</div>
-            <div className="nh-panel-body">
-              Not Hotdog is the only computer vision platform purpose-built
-              to answer a single question &mdash; with zero scope creep,
-              zero feature bloat, and maximum focus. Upload a photo below
-              and our model will render a definitive verdict.
-            </div>
-          </div>
-
-          <div className="nh-tabbar" id="detector">
-            <a href="#detector" className="active">
-              Live Detector
-            </a>
-            <a href="#features">Feature Spotlight</a>
-            <a href="#press">Press Coverage</a>
-          </div>
-          <div className="nh-metabar">
-            <span>
-              Showing <b>1 of 1</b> detections today &middot; Accuracy:{" "}
-              <b>99.7%</b> &middot; Latency: <b>&lt;200ms</b>
-            </span>
-            <span>&laquo; Previous | 1 | Next &raquo;</span>
-          </div>
-
-          <div className="nh-list">
-            <div className="nh-row nh-row-live">
-              <div className="nh-thumb">
-                {previewUrl ? (
-                  <img src={previewUrl} alt="Uploaded preview" />
-                ) : (
-                  <div className="nh-thumb-placeholder">&#128247;</div>
-                )}
-                {status === "loading" && (
-                  <div className="nh-thumb-loading">
-                    <SpinnerRing />
+        <div className="nh-panel" id="detector">
+          <div className="nh-panel-head">LIVE DETECTOR</div>
+          <div className="nh-panel-body">
+            <div className="nh-detector-stage">
+              {previewUrl ? (
+                <img src={previewUrl} alt="Uploaded preview" />
+              ) : (
+                <div className="nh-detector-placeholder">
+                  <div className="icon">&#128247;</div>
+                  <div>
+                    Upload a photo or use your camera to begin live hotdog
+                    analysis.
                   </div>
-                )}
-                {result === "hotdog" && (
-                  <div className="nh-thumb-badge yes">&#10003;</div>
-                )}
-                {result === "not hotdog" && (
-                  <div className="nh-thumb-badge no">&#10007;</div>
-                )}
-              </div>
-              <div className="nh-row-body">
-                <div className={`nh-row-title ${rowTitleClass}`}>
-                  {rowTitle}
                 </div>
-                <div className="nh-row-desc">{rowDesc}</div>
-                <div className="nh-row-meta">Last updated: just now</div>
-                <div className="nh-row-actions">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    style={{ display: "none" }}
-                    onChange={handleInputChange}
-                  />
-                  <input
-                    ref={cameraInputRef}
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    style={{ display: "none" }}
-                    onChange={handleInputChange}
-                  />
-                  <button
-                    className="nh-btn"
-                    disabled={status === "loading"}
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    Upload Photo
-                  </button>
-                  <button
-                    className="nh-btn"
-                    disabled={status === "loading"}
-                    onClick={() => cameraInputRef.current?.click()}
-                  >
-                    Use Camera
-                  </button>
-                  <button
-                    className="nh-btn nh-btn-green"
-                    disabled={!file || status === "loading"}
-                    onClick={handleAnalyze}
-                  >
-                    {status === "loading" ? "Evaluating..." : "Analyze »"}
-                  </button>
-                  {file && status !== "loading" && (
-                    <button className="nh-btn" onClick={handleReset}>
-                      Reset
-                    </button>
-                  )}
+              )}
+
+              {status === "loading" && (
+                <div className="nh-eval-overlay">
+                  <div className="nh-eval-text">EVALUATING...</div>
+                  <div className="nh-progress-track">
+                    <div className="nh-progress-bar" />
+                  </div>
+                  <div className="nh-eval-sub">
+                    Analyzing pixel-level frankfurter probability&hellip;
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {result === "hotdog" && (
+                <div className="nh-detector-badge yes">&#10003;</div>
+              )}
+              {result === "not hotdog" && (
+                <div className="nh-detector-badge no">&#10007;</div>
+              )}
             </div>
 
-            <div id="testimonials" />
-            {FEED.map((item) => (
-              <div className="nh-row" key={item.title}>
-                <div className="nh-thumb" style={{ width: 80, height: 80 }}>
-                  <div
-                    className="nh-thumb-placeholder"
-                    style={{ fontSize: 16, color: "#ffd23f", fontWeight: "bold" }}
-                  >
-                    {item.mono}
-                  </div>
-                </div>
-                <div className="nh-row-body">
-                  <div className="nh-row-title">{item.title}</div>
-                  <div className="nh-row-desc">&ldquo;{item.quote}&rdquo;</div>
-                  <div className="nh-row-meta">
-                    {item.author} &middot; {item.meta}
-                  </div>
-                </div>
+            <div className="nh-detector-status">
+              <div className={`nh-detector-title ${titleClass}`}>{title}</div>
+              <div className="nh-detector-desc">{desc}</div>
+
+              <div className="nh-detector-actions">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleInputChange}
+                />
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  style={{ display: "none" }}
+                  onChange={handleInputChange}
+                />
+                <button
+                  className="nh-btn nh-btn-lg"
+                  disabled={status === "loading"}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Upload Photo
+                </button>
+                <button
+                  className="nh-btn nh-btn-lg"
+                  disabled={status === "loading"}
+                  onClick={() => cameraInputRef.current?.click()}
+                >
+                  Use Camera
+                </button>
+                <button
+                  className="nh-btn nh-btn-primary nh-btn-lg"
+                  disabled={!file || status === "loading"}
+                  onClick={handleAnalyze}
+                >
+                  {status === "loading" ? "Evaluating..." : "Analyze »"}
+                </button>
+                {file && status !== "loading" && (
+                  <button className="nh-btn nh-btn-lg" onClick={handleReset}>
+                    Reset
+                  </button>
+                )}
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="pricing">
+          <div className="nh-trial-banner">
+            &#127881; Start with a 7-Day Free Trial &mdash; No credit card
+            required
+          </div>
+          <div className="nh-pricing-grid">
+            {PRICING_PLANS.map((p) => (
+              <PriceCard key={p.plan} {...p} />
             ))}
           </div>
         </div>
 
-        <div className="nh-sidebar-right">
-          <div className="nh-tabbar">
-            <a href="#features" className="active">
-              Specs
-            </a>
-            <a href="#press">News</a>
+        <div className="nh-panel" id="trusted-by" style={{ marginTop: 14 }}>
+          <div className="nh-panel-head">TRUSTED BY</div>
+          <div className="nh-panel-body">
+            <div className="nh-trustedstrip">
+              {FAKE_COMPANIES.map((c) => (
+                <span key={c}>{c}</span>
+              ))}
+            </div>
           </div>
-          <div className="nh-panel" id="features" style={{ borderTop: "none" }}>
-            <div className="nh-panel-head">PRODUCT SPECS</div>
+        </div>
+
+        <div className="nh-twocol">
+          <div className="nh-panel">
+            <div className="nh-panel-head">TESTIMONIALS</div>
             <div>
-              {FEATURES.map((f) => (
-                <div className="nh-featureitem" key={f.title}>
-                  <div className="t">{f.title}</div>
-                  <div className="d">{f.desc}</div>
+              {TESTIMONIALS.map((t) => (
+                <div className="nh-quote" key={t.author}>
+                  <div className="nh-quote-text">&ldquo;{t.quote}&rdquo;</div>
+                  <div className="nh-quote-author">{t.author}</div>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="nh-panel" id="press">
+          <div className="nh-panel" id="news">
             <div className="nh-panel-head">IN THE PRESS</div>
             <ul className="nh-linklist">
               {PRESS_HEADLINES.map((h) => (
@@ -665,6 +537,9 @@ export default function App() {
         <div style={{ marginTop: 6 }}>
           &copy; 2026 Not Hotdog, Inc. All rights reserved. Not affiliated
           with any actual hotdog.
+        </div>
+        <div className="nh-disclaimer">
+          Not affiliated with Pied Piper, but we wish we were.
         </div>
         <div className="nh-disclaimer">
           Best viewed in Internet Explorer 6 at 800&times;600 resolution.
